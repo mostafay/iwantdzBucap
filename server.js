@@ -150,6 +150,11 @@ const configureMySQL = async () => {
   // Skip automatic MySQL installation in Codespaces - use Docker instead
   // await checkAndConfigureMySQL();
   
+  // Wait for MySQL to start up (important for Docker MySQL)
+  console.log('⏳ Waiting for MySQL to start up...');
+  await new Promise(resolve => setTimeout(resolve, 10000)); // 10 second delay
+  console.log('✅ MySQL startup delay completed');
+  
   // Middleware
   app.use(cors());
   app.use(express.json());
