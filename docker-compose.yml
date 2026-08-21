@@ -1,17 +1,6 @@
 version: '3.8'
 
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    volumes:
-      - .:/workspace
-    command: sleep infinity
-    network_mode: service:mysql
-    depends_on:
-      - mysql
-
   mysql:
     image: mysql:8.0
     container_name: iwantdz_mysql
