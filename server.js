@@ -304,6 +304,14 @@ const initializeUserTablesDb = () => {
 // Initialize databases before starting the server
 Promise.all([initializeMainDb(), initializeUserTablesDb()]).then(() => {
   console.log('Database initialization completed');
+  
+  // Import JSON data to MySQL after database initialization
+  console.log('📥 Importing JSON data to MySQL...');
+  importJsonToMySQL().then(() => {
+    console.log('✅ Import to MySQL completed');
+  }).catch((mysqlError) => {
+    console.log('⚠️ Import to MySQL failed:', mysqlError.message);
+  });
 }).catch(err => {
   console.error('Some databases failed to initialize:', err);
   console.warn('Server will continue running despite database initialization failures');
