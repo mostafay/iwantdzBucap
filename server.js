@@ -345,16 +345,36 @@ Promise.all([initializeMainDb(), initializeUserTablesDb()]).then(() => {
     // Update User table schema to ensure password column exists
     if (db) {
       console.log('🔧 Updating User table schema...');
-      const alterSql = `
-        ALTER TABLE User 
-        ADD COLUMN IF NOT EXISTS currentOid VARCHAR(20),
-        ADD COLUMN IF NOT EXISTS password VARCHAR(255)
-      `;
-      db.query(alterSql, (err) => {
-        if (err) {
-          console.log('⚠️ User schema update failed:', err.message);
-        } else {
-          console.log('✅ User table schema updated');
+      
+      // Check and add currentOid column if it doesn't exist
+      const checkCurrentOidSql = `SHOW COLUMNS FROM User LIKE 'currentOid'`;
+      db.query(checkCurrentOidSql, (err, results) => {
+        if (!err && results.length === 0) {
+          const addCurrentOidSql = `ALTER TABLE User ADD COLUMN currentOid VARCHAR(20)`;
+          db.query(addCurrentOidSql, (err) => {
+            if (err) {
+              console.log('⚠️ Failed to add currentOid column:', err.message);
+            } else {
+              console.log('✅ Added currentOid column');
+            }
+          });
+        }
+      });
+      
+      // Check and add password column if it doesn't exist
+      const checkPasswordSql = `SHOW COLUMNS FROM User LIKE 'password'`;
+      db.query(checkPasswordSql, (err, results) => {
+        if (!err && results.length === 0) {
+          const addPasswordSql = `ALTER TABLE User ADD COLUMN password VARCHAR(255)`;
+          db.query(addPasswordSql, (err) => {
+            if (err) {
+              console.log('⚠️ Failed to add password column:', err.message);
+            } else {
+              console.log('✅ Added password column');
+            }
+          });
+        } else if (!err) {
+          console.log('✅ User table schema already up to date');
         }
       });
     }
