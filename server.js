@@ -341,6 +341,23 @@ Promise.all([initializeMainDb(), initializeUserTablesDb()]).then(() => {
   console.log('📥 Importing JSON data to MySQL...');
   importJsonToMySQL().then(() => {
     console.log('✅ Import to MySQL completed');
+    
+    // Update User table schema to ensure password column exists
+    if (db) {
+      console.log('🔧 Updating User table schema...');
+      const alterSql = `
+        ALTER TABLE User 
+        ADD COLUMN IF NOT EXISTS currentOid VARCHAR(20),
+        ADD COLUMN IF NOT EXISTS password VARCHAR(255)
+      `;
+      db.query(alterSql, (err) => {
+        if (err) {
+          console.log('⚠️ User schema update failed:', err.message);
+        } else {
+          console.log('✅ User table schema updated');
+        }
+      });
+    }
   }).catch((mysqlError) => {
     console.log('⚠️ Import to MySQL failed:', mysqlError.message);
   });
