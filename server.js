@@ -152,7 +152,7 @@ const configureMySQL = async () => {
   
   // Wait for MySQL to start up (important for Docker MySQL)
   console.log('⏳ Waiting for MySQL to start up...');
-  await new Promise(resolve => setTimeout(resolve, 10000)); // 10 second delay
+  await new Promise(resolve => setTimeout(resolve, 20000)); // 20 second delay
   console.log('✅ MySQL startup delay completed');
   
   // Middleware
@@ -174,68 +174,83 @@ let db = null;
 // Try to connect to main database, but continue if it fails
 const initializeMainDb = () => {
   return new Promise((resolve) => {
-    // First try to connect without database to create it if needed
-    const tempDb = mysql.createConnection({
-      host: process.env.DB_HOST || 'localhost',
-      user: process.env.DB_USER || 'root',
-      password: process.env.DB_PASSWORD || '',
-      port: process.env.DB_PORT || 3306
-    });
-    
-    tempDb.connect((err) => {
-      if (err) {
-        console.warn('⚠️  Main database server connection failed:', err.message);
-        console.warn('⚠️  Server will continue running without main database connection');
-        console.warn('⚠️  You can restore the database from cloud backup when ready');
-        resolve();
-        return;
-      }
+    // Function to attempt connection with retry
+    const attemptConnection = (retryCount = 0) => {
+      const maxRetries = 5;
+      const retryDelay = 3000; // 3 seconds
       
-      const createDbSql = 'CREATE DATABASE IF NOT EXISTS iwantdz_db';
+      // First try to connect without database to create it if needed
+      const tempDb = mysql.createConnection({
+        host: process.env.DB_HOST || 'localhost',
+        user: process.env.DB_USER || 'root',
+        password: process.env.DB_PASSWORD || '',
+        port: process.env.DB_PORT || 3306
+      });
       
-      tempDb.query(createDbSql, (err) => {
+      tempDb.connect((err) => {
         if (err) {
-          console.warn('⚠️  Error creating main database:', err.message);
+          if (retryCount < maxRetries) {
+            console.warn(`⚠️  Main database connection attempt ${retryCount + 1} failed, retrying in ${retryDelay/1000}s...`);
+            tempDb.end();
+            setTimeout(() => attemptConnection(retryCount + 1), retryDelay);
+            return;
+          }
+          console.warn('⚠️  Main database server connection failed:', err.message);
           console.warn('⚠️  Server will continue running without main database connection');
           console.warn('⚠️  You can restore the database from cloud backup when ready');
-          tempDb.end();
           resolve();
           return;
         }
         
-        console.log('Main database checked/created');
-        tempDb.end();
+        const createDbSql = 'CREATE DATABASE IF NOT EXISTS iwantdz_db';
         
-        // Now connect to the specific database
-        db = mysql.createConnection({
-          host: process.env.DB_HOST || 'localhost',
-          user: process.env.DB_USER || 'root',
-          password: process.env.DB_PASSWORD || '',
-          database: process.env.DB_NAME || 'iwantdz_db',
-          port: process.env.DB_PORT || 3306
-        });
-        
-        db.connect((err) => {
+        tempDb.query(createDbSql, (err) => {
           if (err) {
-            console.warn('⚠️  Main database connection failed:', err.message);
+            console.warn('⚠️  Error creating main database:', err.message);
             console.warn('⚠️  Server will continue running without main database connection');
             console.warn('⚠️  You can restore the database from cloud backup when ready');
+            tempDb.end();
             resolve();
             return;
           }
-          
-          console.log('Connected to main MySQL database');
-          
-          // Ensure SineWithId table exists
-          ensureSineWithIdTableExists((err) => {
+        
+          console.log('Main database checked/created');
+          tempDb.end();
+        
+          // Now connect to the specific database
+          db = mysql.createConnection({
+            host: process.env.DB_HOST || 'localhost',
+            user: process.env.DB_USER || 'root',
+            password: process.env.DB_PASSWORD || '',
+            database: process.env.DB_NAME || 'iwantdz_db',
+            port: process.env.DB_PORT || 3306
+          });
+        
+          db.connect((err) => {
             if (err) {
-              console.warn('⚠️  Failed to create SineWithId table:', err.message);
+              console.warn('⚠️  Main database connection failed:', err.message);
+              console.warn('⚠️  Server will continue running without main database connection');
+              console.warn('⚠️  You can restore the database from cloud backup when ready');
+              resolve();
+              return;
             }
-            resolve();
+          
+            console.log('Connected to main MySQL database');
+          
+            // Ensure SineWithId table exists
+            ensureSineWithIdTableExists((err) => {
+              if (err) {
+                console.warn('⚠️  Failed to create SineWithId table:', err.message);
+              }
+              resolve();
+            });
           });
         });
       });
-    });
+    };
+    
+    // Start connection attempts
+    attemptConnection();
   });
 };
 
@@ -245,61 +260,76 @@ let userTablesDb = null;
 // First, create the database if it doesn't exist, then connect to it
 const initializeUserTablesDb = () => {
   return new Promise((resolve) => {
-    // First connect without database to create it if needed
-    const tempDb = mysql.createConnection({
-      host: process.env.DB_HOST || 'localhost',
-      user: process.env.DB_USER || 'root',
-      password: process.env.DB_PASSWORD || '',
-      port: process.env.DB_PORT || 3306
-    });
-    
-    tempDb.connect((err) => {
-      if (err) {
-        console.warn('⚠️  Temp database connection failed:', err.message);
-        console.warn('⚠️  Server will continue running without user tables database connection');
-        console.warn('⚠️  You can restore the database from cloud backup when ready');
-        resolve();
-        return;
-      }
+    // Function to attempt connection with retry
+    const attemptConnection = (retryCount = 0) => {
+      const maxRetries = 5;
+      const retryDelay = 3000; // 3 seconds
       
-      const createDbSql = 'CREATE DATABASE IF NOT EXISTS iwantdz_user_tables';
+      // First connect without database to create it if needed
+      const tempDb = mysql.createConnection({
+        host: process.env.DB_HOST || 'localhost',
+        user: process.env.DB_USER || 'root',
+        password: process.env.DB_PASSWORD || '',
+        port: process.env.DB_PORT || 3306
+      });
       
-      tempDb.query(createDbSql, (err) => {
+      tempDb.connect((err) => {
         if (err) {
-          console.warn('⚠️  Error creating user tables database:', err.message);
+          if (retryCount < maxRetries) {
+            console.warn(`⚠️  User tables database connection attempt ${retryCount + 1} failed, retrying in ${retryDelay/1000}s...`);
+            tempDb.end();
+            setTimeout(() => attemptConnection(retryCount + 1), retryDelay);
+            return;
+          }
+          console.warn('⚠️  Temp database connection failed:', err.message);
           console.warn('⚠️  Server will continue running without user tables database connection');
           console.warn('⚠️  You can restore the database from cloud backup when ready');
-          tempDb.end();
           resolve();
           return;
         }
         
-        console.log('User tables database checked/created');
-        tempDb.end();
+        const createDbSql = 'CREATE DATABASE IF NOT EXISTS iwantdz_user_tables';
         
-        // Now connect to the specific database
-        userTablesDb = mysql.createConnection({
-          host: process.env.DB_HOST || 'localhost',
-          user: process.env.DB_USER || 'root',
-          password: process.env.DB_PASSWORD || '',
-          database: 'iwantdz_user_tables',
-          port: process.env.DB_PORT || 3306
-        });
-        
-        userTablesDb.connect((err) => {
+        tempDb.query(createDbSql, (err) => {
           if (err) {
-            console.warn('⚠️  User tables database connection failed:', err.message);
+            console.warn('⚠️  Error creating user tables database:', err.message);
             console.warn('⚠️  Server will continue running without user tables database connection');
             console.warn('⚠️  You can restore the database from cloud backup when ready');
+            tempDb.end();
             resolve();
             return;
           }
           
-          console.log('Connected to user tables database');
-          resolve();
+          console.log('User tables database checked/created');
+          tempDb.end();
+          
+          // Now connect to the specific database
+          userTablesDb = mysql.createConnection({
+            host: process.env.DB_HOST || 'localhost',
+            user: process.env.DB_USER || 'root',
+            password: process.env.DB_PASSWORD || '',
+            database: 'iwantdz_user_tables',
+            port: process.env.DB_PORT || 3306
+          });
+          
+          userTablesDb.connect((err) => {
+            if (err) {
+              console.warn('⚠️  User tables database connection failed:', err.message);
+              console.warn('⚠️  Server will continue running without user tables database connection');
+              console.warn('⚠️  You can restore the database from cloud backup when ready');
+              resolve();
+              return;
+            }
+            
+            console.log('Connected to user tables database');
+            resolve();
+          });
         });
       });
-    });
+    };
+    
+    // Start connection attempts
+    attemptConnection();
   });
 };
 
