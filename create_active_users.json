@@ -1,0 +1,11 @@
+{
+  "tableName": "ActiveUsers",
+  "columns": [
+    {"name": "id", "type": "INT", "constraints": "AUTO_INCREMENT PRIMARY KEY"},
+    {"name": "Oid", "type": "VARCHAR(255)", "constraints": "NOT NULL UNIQUE"},
+    {"name": "username", "type": "VARCHAR(255)", "constraints": ""},
+    {"name": "lastSeen", "type": "TIMESTAMP", "constraints": "DEFAULT CURRENT_TIMESTAMP"},
+    {"name": "connectionTime", "type": "TIMESTAMP", "constraints": "DEFAULT CURRENT_TIMESTAMP"},
+    {"name": "status", "type": "VARCHAR(50)", "constraints": "DEFAULT 'online'"}
+  ]
+}

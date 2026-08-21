@@ -1,0 +1,4 @@
+{
+  "tableName": "Notifications",
+  "sql": "DROP TABLE IF EXISTS Notifications"
+}

@@ -1,0 +1,12 @@
+{
+  "tableName": "Notifications",
+  "columns": [
+    {"name": "id", "type": "INT", "constraints": "AUTO_INCREMENT PRIMARY KEY"},
+    {"name": "Oid", "type": "VARCHAR(255)", "constraints": "NOT NULL"},
+    {"name": "senderOid", "type": "VARCHAR(255)", "constraints": ""},
+    {"name": "message", "type": "TEXT", "constraints": ""},
+    {"name": "type", "type": "VARCHAR(50)", "constraints": "DEFAULT 'info'"},
+    {"name": "isRead", "type": "BOOLEAN", "constraints": "DEFAULT false"},
+    {"name": "createdAt", "type": "TIMESTAMP", "constraints": "DEFAULT CURRENT_TIMESTAMP"}
+  ]
+}
