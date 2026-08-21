@@ -1,0 +1,20 @@
+{
+  "name": "iwantdz Backend",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "lts"
+    }
+  },
+  "forwardPorts": [3000],
+  "postCreateCommand": "npm install && node server.js",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.vscode-typescript-next"
+      ]
+    }
+  }
+}
