@@ -160,9 +160,11 @@ const configureMySQL = async () => {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
-  // Log all incoming requests (simplified)
+  // Log all incoming requests (simplified), skip update-connection-status to reduce noise
   app.use((req, res, next) => {
-    console.log(`📡 ${req.method} ${req.url}`);
+    if (req.url !== '/api/update-connection-status') {
+      console.log(`📡 ${req.method} ${req.url}`);
+    }
     next();
   });
 
