@@ -639,6 +639,12 @@ async function importJsonToMySQL() {
     for (const tableName of Object.keys(mainDbData)) {
       const tableData = mainDbData[tableName];
       
+      // Skip lowercase 'user' table - only use 'User' table
+      if (tableName === 'user') {
+        console.log(`⏭️  Skipping table '${tableName}' - using 'User' table instead`);
+        continue;
+      }
+      
       if (tableData.length === 0) continue;
       
       // Get column names from first row
@@ -661,6 +667,8 @@ async function importJsonToMySQL() {
             return `\`${col}\` INT AUTO_INCREMENT PRIMARY KEY`;
           } else if (col === 'OrderIndex' || col === 'OrderPosision') {
             return `\`${col}\` TEXT`;
+          } else if (col === 'password') {
+            return `\`${col}\` VARCHAR(255)`;
           } else if (col === 'dateTime' || col === 'date' || col === 'Lastupdate') {
             return `\`${col}\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP`;
           } else if (col === 'OrderExpired' || col === 'notificationStart' || col === 'notificationEnd' || col === 'createdAt' || col === 'lastSeen' || col === 'connectionTime') {
@@ -680,6 +688,8 @@ async function importJsonToMySQL() {
             return `\`${col}\` INT AUTO_INCREMENT PRIMARY KEY`;
           } else if (col === 'OrderIndex' || col === 'OrderPosision') {
             return `\`${col}\` TEXT`;
+          } else if (col === 'password') {
+            return `\`${col}\` VARCHAR(255)`;
           } else if (col === 'dateTime' || col === 'date' || col === 'Lastupdate') {
             return `\`${col}\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP`;
           } else if (col === 'OrderExpired' || col === 'notificationStart' || col === 'notificationEnd' || col === 'createdAt' || col === 'lastSeen' || col === 'connectionTime') {
@@ -755,6 +765,8 @@ async function importJsonToMySQL() {
             return `\`${col}\` INT AUTO_INCREMENT PRIMARY KEY`;
           } else if (col === 'OrderIndex' || col === 'OrderPosision') {
             return `\`${col}\` TEXT`;
+          } else if (col === 'password') {
+            return `\`${col}\` VARCHAR(255)`;
           } else if (col === 'dateTime' || col === 'date' || col === 'Lastupdate') {
             return `\`${col}\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP`;
           } else if (col === 'OrderExpired' || col === 'notificationStart' || col === 'notificationEnd' || col === 'createdAt' || col === 'lastSeen' || col === 'connectionTime') {
@@ -774,6 +786,8 @@ async function importJsonToMySQL() {
             return `\`${col}\` INT AUTO_INCREMENT PRIMARY KEY`;
           } else if (col === 'OrderIndex' || col === 'OrderPosision') {
             return `\`${col}\` TEXT`;
+          } else if (col === 'password') {
+            return `\`${col}\` VARCHAR(255)`;
           } else if (col === 'dateTime' || col === 'date' || col === 'Lastupdate') {
             return `\`${col}\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP`;
           } else if (col === 'OrderExpired' || col === 'notificationStart' || col === 'notificationEnd' || col === 'createdAt' || col === 'lastSeen' || col === 'connectionTime') {

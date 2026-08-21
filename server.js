@@ -1030,7 +1030,8 @@ app.post('/api/update-user-schema', (req, res) => {
   }
   const alterSql = `
     ALTER TABLE User 
-    ADD COLUMN IF NOT EXISTS currentOid VARCHAR(20)
+    ADD COLUMN IF NOT EXISTS currentOid VARCHAR(20),
+    ADD COLUMN IF NOT EXISTS password VARCHAR(255)
   `;
   
   db.query(alterSql, (err, results) => {
@@ -1043,7 +1044,7 @@ app.post('/api/update-user-schema', (req, res) => {
     console.log('✅ User schema updated');
     res.json({ 
       message: 'User table schema updated successfully',
-      changes: 'Added currentOid column'
+      changes: 'Added currentOid and password columns'
     });
   });
 });
