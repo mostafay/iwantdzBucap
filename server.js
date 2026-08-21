@@ -147,7 +147,8 @@ const configureMySQL = async () => {
 
 // Run MySQL check on startup, then start server
 (async () => {
-  await checkAndConfigureMySQL();
+  // Skip automatic MySQL installation in Codespaces - use Docker instead
+  // await checkAndConfigureMySQL();
   
   // Middleware
   app.use(cors());
